@@ -34,7 +34,7 @@ def promquery(name):
     ############СЕТЬ############
     ram = p.query_range(
         'sum(node_network_receive_bytes_total)',
-        '2022-05-13T19:27:00Z', '2022-05-15T23:45:00Z', '1m')
+        '2022-05-14T01:01:14Z', '2022-05-15T01:01:14Z', '1m')
     print(ram.to_string())
     with open("metrics_network.txt", "w") as metrics:
         print(ram.to_string(), file=metrics)
@@ -42,54 +42,14 @@ def promquery(name):
 
 
 def jupyterstart():
-    url = "http://maps.googleapis.com/maps/api/geocode/json"
-    location = "delhi technological university"
-    params = {'address': location}
-    r = requests.post(url, params)
+    url = "http://127.0.0.1:9228/stoptime"
+    r = requests.get(url)
     data = r.json()
     temp = r.json
     print(data)
     print(temp)
-    # runipy jup_graph.ipynb
-    # curl - i - X
-    # POST - H
-    # "X-AUTH-TOKEN: $AUTH_TOKEN" - H
-    # "Content-Type: application/json" - H
-    # "Accept: application/json" \
-    # - d
-    # '{"path":"Users/abc@xyz.com/note1.ipynb", "command_type":"JupyterNotebookCommand",  "label":"spark-cluster-1", "arguments": {"name":"xyz", "age":"20"}}' \
-    # "https://api.qubole.com/api/v1.2/commands"
-
     # рабочий курл
     #curl http://localhost:8888/api/contents -H "Authorization: token f4e4170fc9dcae27e1b26aab49492c55e6089ed6fc5ea7da"
-
-def restart_kernel_and_run_all_cells():
-    display(HTML(
-        '''
-            <script>
-                code_show = false;
-                function restart_run_all(){
-                    IPython.notebook.kernel.restart();
-                    setTimeout(function(){
-                        IPython.notebook.execute_all_cells();
-                    }, 10000)
-                }
-                function code_toggle() {
-                    if (code_show) {
-                        $('div.input').hide(200);
-                    } else {
-                        $('div.input').show(200);
-                    }
-                    code_show = !code_show
-                }
-                code_toggle() 
-                restart_run_all()
-            </script>
-
-        '''
-    )
-    )
-
 
 
 # Press the green button in the gutter to run the script.
@@ -98,9 +58,10 @@ if __name__ == '__main__':
     # запрос на создание в анаплане
 
     # статистика
-    promquery('PyCharm')
-    # запрос на создание в юпитере
-    #jupyterstart()
+    # promquery('PyCharm')
+
+    # вручную запускаем ноутбук - запрос на получение время работы ноутбука
+    jupyterstart()
 
     #restart_kernel_and_run_all_cells()
     # статистика
