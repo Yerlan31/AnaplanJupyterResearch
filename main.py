@@ -8,7 +8,7 @@ from datetime import timedelta
 from prometheus_pandas import query as pp
 import runipy
 import requests
-from IPython.display import HTML, Javascript, display
+import json
 
 
 def promquery(name):
@@ -42,15 +42,23 @@ def promquery(name):
 
 
 def jupyterstart():
+    # получение времени начала запуска
+    url = "http://127.0.0.1:9228/starttime"
+    r = requests.get(url)
+    data = r.json()
+    # jsonData = json.loads(data)
+    # print(jsonData["'text/plain'"])
+    resultstart = (data["text/plain"])
+
+    # получение времени конца запуска
     url = "http://127.0.0.1:9228/stoptime"
     r = requests.get(url)
     data = r.json()
-    temp = r.json
-    print(data)
-    print(temp)
+    resultstop = (data["text/plain"])
+
     # рабочий курл
     #curl http://localhost:8888/api/contents -H "Authorization: token f4e4170fc9dcae27e1b26aab49492c55e6089ed6fc5ea7da"
-
+    return resultstart, resultstop
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -61,9 +69,7 @@ if __name__ == '__main__':
     # promquery('PyCharm')
 
     # вручную запускаем ноутбук - запрос на получение время работы ноутбука
-    jupyterstart()
-
-    #restart_kernel_and_run_all_cells()
+    timetuple = jupyterstart()
     # статистика
     # promquery('PyCharm')
     # создание временного ряда
