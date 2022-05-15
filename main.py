@@ -13,27 +13,29 @@ import time
 
 
 def promquery(starttime, stoptime):
-
+    # задержка, для того чтобы node exporter успел собрать метрики
     time.sleep(5)
     p = query.Prometheus('http://localhost:8428')
     # требуется проверка времени, тк часовые пояса иногда слетают - лучше вывести за день
 
     ############ПРОЦЕССОР############
-     # cpu = p.query_range(
-        # 'sum(rate(node_cpu_seconds_total[5m]))',
-        # '2022-05-13T19:27:00Z', '2022-05-15T23:45:00Z', '1m')
-    # print(cpu.to_string())
-    # with open("metrics_cpu.txt", "w") as metrics:
-    #     print(cpu.to_string(), file=metrics)
-    #     metrics.close()
-    ############ОЗУ############
-    # ram = p.query_range(
-    #     'sum(rate(node_memory_MemTotal_bytes[5m]))',
-    #     '2022-05-13T19:27:00Z', '2022-05-15T23:45:00Z', '1m')
-    # print(ram.to_string())
-    # with open("metrics_ram.txt", "w") as metrics:
-    #     print(ram.to_string(), file=metrics)
-    #     metrics.close()
+    cpu = p.query_range(
+        'sum(rate(node_cpu_seconds_total[5m]))',
+        starttime, stoptime, '1s')
+    print(cpu.to_string())
+    with open("metrics_cpu.txt", "w") as metrics:
+        print(cpu.to_string(), file=metrics)
+        metrics.close()
+
+    ###########ОЗУ############
+    ram = p.query_range(
+        'sum(rate(node_memory_MemTotal_bytes[5m]))',
+        starttime, stoptime, '1s')
+    print(ram.to_string())
+    with open("metrics_ram.txt", "w") as metrics:
+        print(ram.to_string(), file=metrics)
+        metrics.close()
+
     ############СЕТЬ############
     ram = p.query_range(
         'sum(node_network_receive_bytes_total)',
@@ -77,6 +79,7 @@ if __name__ == '__main__':
 
     # вручную запускаем ноутбук - запрос на получение время работы ноутбука
     timetuple = jupyterstart()
+    print("Сбор метрик проводится за время работы Jupyter Notebook:")
     print(timetuple[0], timetuple[1])
     # статистика
     promquery(timetuple[0], timetuple[1])
