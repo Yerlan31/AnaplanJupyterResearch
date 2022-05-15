@@ -8,7 +8,8 @@
     
    <li> Set endpoints on every cell needed to run (including #)
      
-     # GET /run1
+     #<request type> <endpoint>
+     # GET /run
     
   <li> Run jupyter kernel for http requests 
     
