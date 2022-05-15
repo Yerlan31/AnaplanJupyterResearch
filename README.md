@@ -4,5 +4,6 @@
 <ul>
   <li> Run jupyter notebook
   <li> Run jupyter kernel for http requests 
+    
     jupyter kernelgateway --KernelGatewayApp.api=kernel_gateway.notebook_http --KernelGatewayApp.seed_uri=./nirsec.ipynb --port=9228
 </ul>
