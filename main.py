@@ -3,19 +3,19 @@ import os
 import re
 import pandas as pd
 from matplotlib import pyplot as plt
-from datetime import datetime
+from datetime import datetime, timedelta
 from datetime import timedelta
 from prometheus_pandas import query as pp
 import runipy
 import requests
 import json
 import time
-ANAPLANTOKEN='AnaplanAuthToken ivFEST1VWhaf6/UhPaomjA==.Q3LNhGlWoEdrhPZE90jJ2OxFuKn9YMpye/seb5SXnwKjR7hlSyZMIyGOB7eCrI2ojpZ25c7XIKZctJupZl29Q6W7JbmVAZ+scZKqMf1sAwAm1+HLcpgTLyqYo7S0LKGKbdT9AhFezLYctBhX52/k5Ok3xZrHT2dHSbRgcXm+stXW1gVuMhWSDsmWtvoFusMaN6DN+TR9oP+wy6qqHVuc8IE319vBNdLQpASchOveYHmBIGqjETN9X9IkkZRkzqYj7ixXWcmmf5QAncitVnaQkf7JQ82H/CG8sbR+ORLx69HD/wPGs+8X6JNBr9E2yFHAAUI6QMK36XDcIWbkmBQQqYvDiHyvz/4uPJ/ttPqptdYmcF4xWrezMpRaXTygXvJCi6ZhndwSbQIsbZdd43R9IC0k8F9xX83pObHCUajVRxFphswd/5xEWFAi6OKtwYDQq5dXhWk7M+4ZVu1LwHpwpfZJSVllJmvnIxuoTXnx+CqErthRMhbK6CzhBsmqkvR4.90Bu20wlZHjqMEH64LFpk+ssmNfLoHZgRtbfBndma1M='
+ANAPLANTOKEN='AnaplanAuthToken YFZ6AzF8yPX98LhrMPR/ag==.vgOotD0RB7sHql+n3qlMY67DSuUDbkw1AaVHHZqu/h1k+RYJzAaC2sKVk6xeeIbGoc3kCAAeQPU+VgrgaaFyNUhHPO+pSBvYmDDcVjBdpGsDH+qZVOAkMPGFTfjfmBMAsS/b1HZUpE+9F1ICLwKdhjfgogrIhEz993+MizGU78PR601DOSGLHH3OHjZwM/GY240CMKWFoeIgBgFvn2ymSJddwrELhef158LMtZeSRqDdt3wiT6sP+9aQdQlqlyuD7GMeusFxyrvKeC4M77jeG0ImG/jPgFaQxCmQNvrNf0th3FnR0zwYxFRdwR4DbCTuqx3h5MZyIgdccLqQ/yE9tr3JddlLIA/BGB8Jyy3E3tq59eVxVAMEkYlIOiWeXysRBpW+SEp51LrWrDtoy5ZXe8dtWzmCNXTXQaJWYRDDyOitHbblDz0f76SAhKhpuWn8lC1DSCq1C1aNW4VBVtv5jsSXav0KqfbHeoFuLH3/DDAuaOTTXBaV3vMd2fvqtEzi.mD8PLInzazwHsOtJpNXb1L+KnSIfyFMrpQqsTKs34X8='
 
 
 def anaplanstart():
     # получение времени запуска для отслеживания метрик
-    d = datetime.now()
+    d = datetime.now() - timedelta(hours=3)
     starttime = d.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # процессы построены, необходимо только его начать
@@ -28,11 +28,12 @@ def anaplanstart():
     print(r)
 
     # получение времени окончания для отслеживания метрик
-    d = datetime.now()
+    d = datetime.now() - timedelta(hours=3) + timedelta(seconds=10)
     stoptime = d.strftime("%Y-%m-%dT%H:%M:%SZ")
     return starttime, stoptime
 
-def promquery(starttime, stoptime):
+
+def promquery(starttime, stoptime, stringtemp):
     # задержка, для того чтобы node exporter успел собрать метрики
     time.sleep(5)
     p = query.Prometheus('http://localhost:8428')
@@ -41,29 +42,30 @@ def promquery(starttime, stoptime):
     ############ПРОЦЕССОР############
     cpu = p.query_range(
         'sum(rate(node_cpu_seconds_total[5m]))',
-        starttime, stoptime, '1s')
+        starttime, stoptime, '0.5s')
     print(cpu.to_string())
-    with open("metrics_cpu.txt", "w") as metrics:
+    with open(stringtemp + "metrics_cpu.txt", "w") as metrics:
         print(cpu.to_string(), file=metrics)
         metrics.close()
 
     ###########ОЗУ############
     ram = p.query_range(
-        'sum(rate(node_memory_MemTotal_bytes[5m]))',
-        starttime, stoptime, '1s')
+        'node_memory_MemTotal_bytes{job="node_exporter_metrics"} - node_memory_MemFree_bytes{job="node_exporter_metrics"} - (node_memory_Cached_bytes{job="node_exporter_metrics"} + node_memory_Buffers_bytes{job="node_exporter_metrics"})',
+        starttime, stoptime, '0.5s')
     print(ram.to_string())
-    with open("metrics_ram.txt", "w") as metrics:
+    with open(stringtemp + "metrics_ram.txt", "w") as metrics:
         print(ram.to_string(), file=metrics)
         metrics.close()
 
     ############СЕТЬ############
     ram = p.query_range(
         'sum(node_network_receive_bytes_total)',
-        starttime, stoptime, '1s')
+        starttime, stoptime, '0.5s')
     print(ram.to_string())
-    with open("metrics_network.txt", "w") as metrics:
+    with open(stringtemp + "metrics_network.txt", "w") as metrics:
         print(ram.to_string(), file=metrics)
         metrics.close()
+
 
 
 def jupyterstart():
@@ -97,14 +99,14 @@ if __name__ == '__main__':
     print("Сбор метрик проводится за время работы Anaplan:")
     print(timetuple[0], timetuple[1])
     # статистика
-    # promquery(timetuple[0], timetuple[1])
+    promquery(timetuple[0], timetuple[1], "anaplan")
 
     # запрос на юпитер
-    # timetuple = jupyterstart()
-    # print("Сбор метрик проводится за время работы Jupyter Notebook:")
-    # print(timetuple[0], timetuple[1])
+    timetuple = jupyterstart()
+    print("Сбор метрик проводится за время работы Jupyter Notebook:")
+    print(timetuple[0], timetuple[1])
     # статистика
-    # promquery(timetuple[0], timetuple[1])
+    promquery(timetuple[0], timetuple[1], "juputer")
     #done
 
     # создание временного ряда
