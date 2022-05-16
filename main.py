@@ -105,5 +105,6 @@ if __name__ == '__main__':
     # print(timetuple[0], timetuple[1])
     # статистика
     # promquery(timetuple[0], timetuple[1])
+    #done
 
     # создание временного ряда
