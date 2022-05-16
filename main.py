@@ -3,14 +3,34 @@ import os
 import re
 import pandas as pd
 from matplotlib import pyplot as plt
-from datetime import datetime as dt
+from datetime import datetime
 from datetime import timedelta
 from prometheus_pandas import query as pp
 import runipy
 import requests
 import json
 import time
+ANAPLANTOKEN='AnaplanAuthToken ivFEST1VWhaf6/UhPaomjA==.Q3LNhGlWoEdrhPZE90jJ2OxFuKn9YMpye/seb5SXnwKjR7hlSyZMIyGOB7eCrI2ojpZ25c7XIKZctJupZl29Q6W7JbmVAZ+scZKqMf1sAwAm1+HLcpgTLyqYo7S0LKGKbdT9AhFezLYctBhX52/k5Ok3xZrHT2dHSbRgcXm+stXW1gVuMhWSDsmWtvoFusMaN6DN+TR9oP+wy6qqHVuc8IE319vBNdLQpASchOveYHmBIGqjETN9X9IkkZRkzqYj7ixXWcmmf5QAncitVnaQkf7JQ82H/CG8sbR+ORLx69HD/wPGs+8X6JNBr9E2yFHAAUI6QMK36XDcIWbkmBQQqYvDiHyvz/4uPJ/ttPqptdYmcF4xWrezMpRaXTygXvJCi6ZhndwSbQIsbZdd43R9IC0k8F9xX83pObHCUajVRxFphswd/5xEWFAi6OKtwYDQq5dXhWk7M+4ZVu1LwHpwpfZJSVllJmvnIxuoTXnx+CqErthRMhbK6CzhBsmqkvR4.90Bu20wlZHjqMEH64LFpk+ssmNfLoHZgRtbfBndma1M='
 
+
+def anaplanstart():
+    # получение времени запуска для отслеживания метрик
+    d = datetime.now()
+    starttime = d.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # процессы построены, необходимо только его начать
+    url = "https://api.anaplan.com/2/0/workspaces/8a868cdc794dca060179fbc4d8767f99/models/C06EDFD7EE20468EB0344F4ECD159E90/processes/118000000001/tasks"
+    headers = {'authorization': ANAPLANTOKEN, 'Content-Type': 'application/json'}
+    payload = '{"localeName": "en_US"}'
+    r = requests.post(url, data=payload, headers=headers)
+    data = r.json()
+    print(data)
+    print(r)
+
+    # получение времени окончания для отслеживания метрик
+    d = datetime.now()
+    stoptime = d.strftime("%Y-%m-%dT%H:%M:%SZ")
+    return starttime, stoptime
 
 def promquery(starttime, stoptime):
     # задержка, для того чтобы node exporter успел собрать метрики
@@ -72,15 +92,18 @@ def jupyterstart():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    # запрос на создание в анаплане
-
-    # статистика
-    # promquery('PyCharm')
-
-    # вручную запускаем ноутбук - запрос на получение время работы ноутбука
-    timetuple = jupyterstart()
-    print("Сбор метрик проводится за время работы Jupyter Notebook:")
+    # запрос анаплан
+    timetuple = anaplanstart()
+    print("Сбор метрик проводится за время работы Anaplan:")
     print(timetuple[0], timetuple[1])
     # статистика
-    promquery(timetuple[0], timetuple[1])
+    # promquery(timetuple[0], timetuple[1])
+
+    # запрос на юпитер
+    # timetuple = jupyterstart()
+    # print("Сбор метрик проводится за время работы Jupyter Notebook:")
+    # print(timetuple[0], timetuple[1])
+    # статистика
+    # promquery(timetuple[0], timetuple[1])
+
     # создание временного ряда
