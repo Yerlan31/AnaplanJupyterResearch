@@ -6,6 +6,11 @@
     
     jupyter notebook
     
+   <li> Set endpoints on every cell needed to run (including #)
+     
+     #<request type> <endpoint>
+     # GET /run
+    
   <li> Run jupyter kernel for http requests 
     
     jupyter kernelgateway --KernelGatewayApp.api=kernel_gateway.notebook_http --KernelGatewayApp.seed_uri=./<notebook name>.ipynb --port=<any free port>
